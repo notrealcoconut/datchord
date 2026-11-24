@@ -1,0 +1,31 @@
+Datchord 1.0.0
+==============
+
+Aplicación web de chat para comunidades. Esta carpeta es una versión portátil ya compilada.
+
+REQUISITOS
+----------
+- Node.js 24 o superior: https://nodejs.org
+
+CÓMO ABRIRLA
+------------
+- Windows: haz doble clic en Datchord.bat
+- macOS / Linux: abre una terminal en esta carpeta y ejecuta:
+    bash datchord.sh
+
+Después abre http://localhost:3000 en el navegador.
+
+DATOS
+-----
+La primera vez se crea la carpeta data/ con la base de datos y las imágenes.
+Todo se guarda ahí. Para empezar de cero, cierra Datchord y borra la carpeta data/.
+
+Esta versión es local: cada persona que la descargue tiene su propia instalación
+y sus propios datos. Para tener un servidor compartido con una URL pública,
+sigue las instrucciones del README del repositorio:
+https://github.com/notrealcoconut/datchord
+
+SI EL PUERTO 3000 ESTÁ OCUPADO
+------------------------------
+- Windows: set PORT=3100 && Datchord.bat
+- macOS/Linux: PORT=3100 bash datchord.sh

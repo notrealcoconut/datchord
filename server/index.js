@@ -454,6 +454,14 @@ function requireUser(req) {
 }
 
 function getIp(req) {
+  // Behind a trusted reverse proxy (Render, Northflank, etc.) the socket
+  // address is the proxy, so rate limits would be shared by every visitor.
+  if (process.env.TRUST_PROXY === 'true') {
+    const forwarded = String(req.headers['x-forwarded-for'] || '')
+      .split(',')[0]
+      .trim();
+    if (forwarded) return forwarded;
+  }
   return req.socket.remoteAddress || 'unknown';
 }
 

@@ -1,0 +1,16 @@
+node_modules
+dist
+data
+release
+.git
+.gitignore
+.env
+.env.*
+*.log
+tsconfig.tsbuildinfo
+packaging
+scripts
+start.bat
+Datchord.bat
+datchord.sh
+LEEME.txt

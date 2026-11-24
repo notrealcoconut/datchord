@@ -4,6 +4,19 @@ A warm, focused home for small communities. Datchord is a full-stack community c
 
 The app starts completely empty: create an account, then create your first server or join one with an invite code. There are no seeded workspaces or demo accounts.
 
+## Download and run
+
+A ready-to-run build is available on the [Releases page](https://github.com/notrealcoconut/datchord/releases/latest).
+
+1. Download `datchord-1.0.0.zip` and extract it.
+2. Install [Node.js 24 or newer](https://nodejs.org).
+3. Start the app:
+   - **Windows:** double-click `Datchord.bat`
+   - **macOS / Linux:** `bash datchord.sh`
+4. Open <http://localhost:3000>.
+
+The portable build keeps its database and uploads in the `data/` folder next to the app. Each download is an independent installation. To run a shared server for several people, deploy it with one of the options below.
+
 ## Features
 
 - **Accounts** — registration, login, profile editing, avatar uploads, email and password changes, account deletion.
@@ -31,7 +44,7 @@ No external services, databases, or API keys are required.
 
 ## Requirements
 
-- Node.js **24 or newer** is recommended (the project uses the built-in `node:sqlite` module; Node 22.5+ also works).
+- Node.js **24 or newer** (the project uses the built-in `node:sqlite` module).
 - npm.
 
 ## Quick start
@@ -71,7 +84,39 @@ On Windows PowerShell:
 $env:PORT = "3100"; npm start
 ```
 
-## Deploy to Render
+## Deploy for free on Northflank
+
+[Northflank's free Sandbox](https://northflank.com/pricing) includes one always-on service and persistent volumes, with no card required. A 0.5 vCPU / 1 GB service plus a 1 GB volume fits inside the free monthly resource allowance, so the existing SQLite database and uploads work without any code changes.
+
+The repository includes a [`Dockerfile`](./Dockerfile) that builds the frontend and runs the zero-dependency server.
+
+1. Create a free account at <https://app.northflank.com/signup> and connect GitHub.
+2. Create a project, then **Create service → Combined**.
+3. Select `notrealcoconut/datchord` and branch `main`.
+4. Build type: **Dockerfile**. Dockerfile path: `/Dockerfile`. Build context: `/`.
+5. Port: `3000`, protocol `HTTP`, public.
+6. Compute: `nf-compute-50` (0.5 vCPU, 1 GB).
+7. Add a volume with container mount path `/var/data` and size 1 GB.
+8. Add these environment variables:
+   - `DATA_DIR=/var/data`
+   - `NODE_ENV=production`
+   - `COOKIE_SECURE=true`
+   - `PORT=3000`
+   - `TRUST_PROXY=true`
+9. Deploy and open the generated `https://...code.run` URL.
+
+The volume keeps `datchord.db` and uploaded images across restarts. `TRUST_PROXY=true` makes rate limiting use the visitor IP from `X-Forwarded-For`; only enable it behind a trusted proxy.
+
+### Docker
+
+```bash
+docker build -t datchord .
+docker run --rm -p 3000:3000 -v datchord-data:/var/data -e DATA_DIR=/var/data datchord
+```
+
+Open <http://localhost:3000>.
+
+## Deploy to Render (paid)
 
 The repository includes a [`render.yaml`](./render.yaml) Blueprint with a persistent disk, so accounts, servers, messages, and uploads survive restarts.
 
@@ -80,7 +125,7 @@ The repository includes a [`render.yaml`](./render.yaml) Blueprint with a persis
 3. Apply the Blueprint. Render provisions a Starter web service with a 1 GB disk mounted at `/var/data`.
 4. Wait for the build and open the generated `https://<service>.onrender.com` URL.
 
-The Blueprint sets `DATA_DIR=/var/data`, `COOKIE_SECURE=true`, and `NODE_ENV=production`. Free Render services cannot attach disks, so use the Starter plan or higher.
+The Blueprint sets `DATA_DIR=/var/data`, `COOKIE_SECURE=true`, and `NODE_ENV=production`. Free Render services cannot attach disks, so use the Starter plan or higher. Starter costs about **$7.25/month** (service plus a 1 GB disk).
 
 ### Manual Render setup
 
@@ -90,8 +135,12 @@ If you prefer not to use the Blueprint:
 - Build command: `npm ci && npm run build`
 - Start command: `npm start`
 - Health check path: `/api/health`
-- Environment: `NODE_ENV=production`, `COOKIE_SECURE=true`, `DATA_DIR=/var/data`
+- Environment: `NODE_ENV=production`, `COOKIE_SECURE=true`, `DATA_DIR=/var/data`, `TRUST_PROXY=true`
 - Disk: 1 GB mounted at `/var/data`
+
+### Why not Supabase free?
+
+Supabase's free plan includes 500 MB Postgres and 1 GB storage, but Datchord uses SQLite. Using Supabase would require rewriting the data layer and moving uploads to Supabase Storage. Free Supabase projects also pause after 7 days without activity. Northflank runs the existing app unchanged and stays on.
 
 ## Scripts
 
@@ -100,6 +149,7 @@ If you prefer not to use the Blueprint:
 | `npm run dev` | Start the Vite dev server and the API with watch mode. |
 | `npm run build` | Type-check the project and build the production frontend into `dist/`. |
 | `npm start` | Serve the built frontend and API from one Node process. |
+| `npm run package` | Build the frontend and create `release/datchord-<version>.zip` for GitHub Releases. |
 | `npm run check:locales` | Verify every locale has the same keys and placeholders as English. |
 | `npm run reset` | Delete the database and uploaded images. The next start begins empty. |
 | `npm run smoke` | Run the API/SSE smoke test against `DATCHORD_URL` (default `http://localhost:3100`). |
@@ -114,6 +164,7 @@ If you prefer not to use the Blueprint:
 | `DATABASE_PATH` | `$DATA_DIR/datchord.db` | Override the SQLite file location. |
 | `ALLOWED_ORIGINS` | — | Comma-separated extra origins allowed to make mutating requests. |
 | `COOKIE_SECURE` | auto | Set to `true` to force the `Secure` cookie flag behind HTTPS. |
+| `TRUST_PROXY` | `false` | Set to `true` behind a trusted reverse proxy so rate limiting uses `X-Forwarded-For`. |
 | `LOG_REQUESTS` | `true` | Set to `false` to silence request logging. |
 | `NODE_ENV` | — | Set to `production` to disable localhost origin exceptions. |
 
@@ -154,11 +205,14 @@ src/
   pages/          Auth, messages/home, workspace, settings
   styles/         Design tokens, layout, components, responsive rules
 scripts/
-  dev.mjs         Development process launcher
-  reset.mjs       Data reset
-  smoke-api.mjs   End-to-end API/SSE smoke test
-  check-locales.mjs
-render.yaml       Render Blueprint with persistent disk
+  dev.mjs             Development process launcher
+  reset.mjs           Data reset
+  smoke-api.mjs       End-to-end API/SSE smoke test
+  check-locales.mjs   Locale key checker
+  package-release.mjs Portable release builder
+packaging/          Portable launchers and Spanish quick-start
+Dockerfile          Production image for Northflank/Docker
+render.yaml         Render Blueprint with persistent disk
 ```
 
 ## How presence, typing and real-time work
@@ -196,4 +250,4 @@ Arabic automatically switches the document to RTL. All layout styles use logical
 
 ## License
 
-This project was built as a personal application. Add a license file if you plan to distribute it.
+This project was built as a personal application. Add a license file if you plan to distribute modified versions.
