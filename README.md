@@ -107,6 +107,8 @@ The repository includes a [`Dockerfile`](./Dockerfile) that builds the frontend 
 
 The volume keeps `datchord.db` and uploaded images across restarts. `TRUST_PROXY=true` makes rate limiting use the visitor IP from `X-Forwarded-For`; only enable it behind a trusted proxy.
 
+If login fails with an origin error, set `ALLOWED_ORIGINS` to the full public URL, for example `https://your-service.code.run`.
+
 ### Docker
 
 ```bash
