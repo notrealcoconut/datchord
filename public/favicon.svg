@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Datchord">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#211a2d"/>
+      <stop offset="1" stop-color="#120f18"/>
+    </linearGradient>
+    <linearGradient id="warm" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#ff6f4e"/>
+      <stop offset="1" stop-color="#ffb16b"/>
+    </linearGradient>
+    <linearGradient id="cool" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8bf0cf"/>
+      <stop offset="1" stop-color="#42c8a7"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="19" fill="url(#bg)"/>
+  <path d="M19 46V28" stroke="#fff6e8" stroke-width="7" stroke-linecap="round"/>
+  <path d="M32 46V18" stroke="url(#warm)" stroke-width="7" stroke-linecap="round"/>
+  <path d="M45 46V24" stroke="url(#cool)" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="45" cy="15" r="3" fill="#ffb16b"/>
+</svg>

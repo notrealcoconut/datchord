@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: datchord
+    runtime: node
+    plan: starter
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: NODE_ENV
+        value: production
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: DATA_DIR
+        value: /var/data
+    disk:
+      name: datchord-data
+      mountPath: /var/data
+      sizeGB: 1
